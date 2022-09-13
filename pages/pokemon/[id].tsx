@@ -129,17 +129,31 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
 		// 		},
 		// 	},
 		// ],
-		fallback: false,
+		// fallback: false,
+		fallback: "blocking",
 	};
 };
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
 	const { id } = ctx.params as { id: string };
 
+	const pokemon = await getPokemonInfo(id);
+
+	if (!pokemon) {
+		return {
+			redirect: {
+				destination: "/",
+				permanent: false,
+			},
+		};
+	}
+
 	return {
 		props: {
-			pokemon: await getPokemonInfo(id),
+			pokemon,
 		},
+		revalidate: 86400, // 60*60*24 (24 h = 86400 segundos) Vuelve a ejecutar los datos de la API
+		// en las páginas cada 24 h
 	};
 };
 
